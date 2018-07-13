@@ -1,0 +1,49 @@
+#!/usr/bin/env python3
+
+from gi.repository import GLib
+from dbus.mainloop.glib import DBusGMainLoop
+import dbus.service
+import dbus
+import sys
+import os.path
+import tempfile
+
+PREFIX = 'org.mpris.MediaPlayer2.'
+FILENAME = os.path.join(tempfile.gettempdir(), 'lastplayer')
+
+if __name__ == '__main__':
+    stack = []
+
+    def update():
+        with open(FILENAME, 'w') as f:
+            for p in reversed(stack):
+                sys.stdout.write(p+' ')
+                f.write(p+'\n')
+            print()
+
+    def init_stack(p):
+        for n in p.ListNames():
+            if n.startswith(PREFIX):
+                stack.append(n.split('.')[-1])
+    def on_name_owner_changed(name, old_owner, new_owner):
+        if not name.startswith(PREFIX):
+            return
+
+        player_name = name.split('.')[-1]
+        if new_owner != '':
+            stack.append(player_name)
+        elif old_owner != '':
+            stack.remove(player_name)
+        update()
+
+    DBusGMainLoop(set_as_default=True)
+    loop = GLib.MainLoop()
+    bus = dbus.SessionBus()
+    proxy = bus.get_object('org.freedesktop.DBus', '/org/freedesktop/DBus')
+    init_stack(proxy)
+    update()
+    proxy.connect_to_signal('NameOwnerChanged', on_name_owner_changed)
+    try:
+        loop.run()
+    except KeyboardInterrupt:
+        pass
