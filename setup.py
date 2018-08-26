@@ -5,7 +5,7 @@ with open('README.md', 'r') as fh:
 
 setuptools.setup(
     name="lastplayer",
-    version="0.0.1",
+    version="0.0.2",
     author="Tudor Roman",
     author_email="tudurom@gmail.com",
     description="Simple program that keeps the order of the last used players",

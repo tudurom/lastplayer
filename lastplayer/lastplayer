@@ -20,6 +20,7 @@ if __name__ == '__main__':
                 sys.stdout.write(p+' ')
                 f.write(p+'\n')
             print()
+            sys.stdout.flush()
 
     def init_stack(p):
         for n in p.ListNames():
